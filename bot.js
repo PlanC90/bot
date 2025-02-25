@@ -18,6 +18,9 @@ let processedUrls = new Set();
 // Store group IDs
 let groupIds = new Set();
 
+// Store the last link
+let lastLink = null;
+
 // Function to fetch and process links
 async function fetchAndProcessLinks() {
   try {
@@ -27,6 +30,11 @@ async function fetchAndProcessLinks() {
     if (!data || !Array.isArray(data.links)) {
       console.log('Invalid data format received.');
       return;
+    }
+
+    // Get the last link from the array
+    if (data.links.length > 0) {
+      lastLink = data.links[data.links.length - 1];
     }
 
     for (const link of data.links) {
@@ -71,7 +79,7 @@ bot.on('new_chat_members', (msg) => {
   }
 });
 
-// Listen for /start command to collect group ID
+// Listen for /start command to collect group ID and send last link
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   if (!groupIds.has(chatId)) {
@@ -80,6 +88,26 @@ bot.onText(/\/start/, (msg) => {
     bot.sendMessage(chatId, 'Welcome! This group ID has been saved.');
   } else {
     bot.sendMessage(chatId, 'Welcome! This group ID is already saved.');
+  }
+
+  if (lastLink) {
+    // Format the message
+    let message = `<b>Last MemeX Community Link!</b>\\n\\n`;
+    message += `<b>Username:</b> ${lastLink.username}\\n`;
+    message += `<b>Platform:</b> ${lastLink.platform}\\n\\n`;
+    message += `Support this post and claim your rewards!`;
+
+    bot.sendPhoto(chatId, imageUrl, {
+      caption: message,
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '✅ Link', url: lastLink.url }]
+        ]
+      }
+    });
+  } else {
+    bot.sendMessage(chatId, 'No links have been processed yet.');
   }
 });
 
