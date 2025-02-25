@@ -6,6 +6,9 @@ const token = '7700368269:AAGCXJJ-Alq7bQGcyg2mk1JXeBi2MwHMEnI';
 // URL of the JSON data
 const dataUrl = 'https://test3-of9y.onrender.com/data/links.json';
 
+// Image URL
+const imageUrl = 'https://memex.planc.space/images/gorsel.jpg';
+
 // Create a bot instance
 const bot = new TelegramBot(token, { polling: true });
 
@@ -36,7 +39,7 @@ async function fetchAndProcessLinks() {
 
         // Send the message to all known group chats
         groupIds.forEach(groupId => {
-          bot.sendPhoto(groupId, 'https://i.ibb.co/j44qG0H/image.png', {
+          bot.sendPhoto(groupId, imageUrl, {
             caption: message,
             parse_mode: 'HTML',
             reply_markup: {
