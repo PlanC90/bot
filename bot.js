@@ -82,8 +82,8 @@ bot.on('new_chat_members', (msg) => {
 // Listen for /start command to collect group ID and send last link
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  if (!groupIds.has(chatId)) {
-    groupIds.add(chatId);
+  if (!groupIds.has(String(chatId))) {
+    groupIds.add(String(chatId));
     console.log(`Group ID saved: ${chatId}`);
     bot.sendMessage(chatId, 'Welcome! This group ID has been saved.');
   } else {
