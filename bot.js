@@ -32,35 +32,42 @@ async function fetchAndProcessLinks() {
       return;
     }
 
-    // Get the last link from the array
-    if (data.links.length > 0) {
-      lastLink = data.links[data.links.length - 1];
+    // Get today's date
+    const today = new Date().toISOString().split('T')[0];
+
+    // Filter links from today
+    const todaysLinks = data.links.filter(link => link.timestamp.split('T')[0] === today);
+
+    // Get the last link from today, if any
+    if (todaysLinks.length > 0) {
+      lastLink = todaysLinks[todaysLinks.length - 1];
     }
 
-    for (const link of data.links) {
-      if (!processedUrls.has(link.url)) {
-        // Format the message
-        let message = `<b>New MemeX Community Link!</b>\\n\\n`;
-        message += `<b>Username:</b> ${link.username}\\n`;
-        message += `<b>Platform:</b> ${link.platform}\\n\\n`;
-        message += `Support this post and claim your rewards!`;
+    if (lastLink && !processedUrls.has(lastLink.url)) {
+      // Format the message
+      let message = `✨ <b>New MemeX Community Link!</b> ✨\\n\\n`;
+      message += `👤 <b>Username:</b> ${lastLink.username}\\n`;
+      message += `🌐 <b>Platform:</b> ${lastLink.platform}\\n\\n`;
+      message += `Support this post and claim your rewards!`;
 
-        // Send the message to all known group chats
-        groupIds.forEach(groupId => {
-          bot.sendPhoto(groupId, imageUrl, {
-            caption: message,
-            parse_mode: 'HTML',
-            reply_markup: {
-              inline_keyboard: [
-                [{ text: '✅ Link', url: link.url }]
-              ]
-            }
-          });
+      // Send the message to all known group chats
+      groupIds.forEach(groupId => {
+        bot.sendPhoto(groupId, imageUrl, {
+          caption: message,
+          parse_mode: 'HTML',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '✅ Link', url: lastLink.url }]
+            ]
+          }
+        })
+        .catch(error => {
+          console.error('Error sending message to group ${groupId}:', error);
         });
+      });
 
-        // Add the URL to the processed set
-        processedUrls.add(link.url);
-      }
+      // Add the URL to the processed set
+      processedUrls.add(lastLink.url);
     }
   } catch (error) {
     console.error('Error fetching or processing data:', error);
@@ -101,9 +108,15 @@ bot.onText(/\/start/, (msg) => {
           [{ text: 'Link', url: lastLink.url }]
         ]
       }
+    })
+    .catch(error => {
+      console.error('Error sending /start message to group ${chatId}:', error);
     });
   } else {
-    bot.sendMessage(chatId, 'No tasks have been processed yet. Please wait for the first task to be added.');
+    bot.sendMessage(chatId, 'No tasks have been processed yet for today. Please wait for the first task to be added.')
+    .catch(error => {
+      console.error('Error sending no tasks message to group ${chatId}:', error);
+    });
   }
 });
 
